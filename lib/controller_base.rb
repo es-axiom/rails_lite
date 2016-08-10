@@ -7,9 +7,10 @@ class ControllerBase
   attr_reader :req, :res, :params
 
   # Setup the controller
-  def initialize(req, res)
+  def initialize(req, res, params)
     @res = res
     @req = req
+    @params = route_params.merge(req.params)
     @already_built_response = false
     @@protect_from_forgery ||= false
   end
@@ -27,6 +28,8 @@ class ControllerBase
     @res.status = 302
 
     @already_built_response = true
+
+    session.store_session(@res)
   end
 
   # Populate the response with content.
@@ -40,6 +43,7 @@ class ControllerBase
 
     @already_built_response = true
 
+    session.store_session(@res)
     nil
   end
 
@@ -47,6 +51,7 @@ class ControllerBase
   # pass the rendered html to render_content
   def render(template_name)
     dir_path = File.dirname(__FILE__)
+    #build up the path name
     template_fname = File.join(
       dir_path,
       "..",
@@ -57,16 +62,17 @@ class ControllerBase
 
     template_code = File.read(template_fname)
 
-    render_content(
-      ERB.new(template_code).result(binding), "text/html"
-    )
+    render_content(ERB.new(template_code).result(binding), "text/html")
   end
 
   # method exposing a `Session` object
   def session
+    @session ||= Session.new(@req)
   end
 
   # use this with the router to call action_name (:index, :show, :create...)
   def invoke_action(name)
+    self.send(name)
+    render(name) unless @already_built_response
   end
 end
