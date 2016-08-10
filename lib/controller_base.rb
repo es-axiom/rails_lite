@@ -2,6 +2,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'erb'
 require_relative './session'
+require_relative './flash'
 
 class ControllerBase
   attr_reader :req, :res, :params
@@ -30,6 +31,7 @@ class ControllerBase
     @already_built_response = true
 
     session.store_session(@res)
+    flash.store_flash(@res)
   end
 
   # Populate the response with content.
@@ -44,6 +46,7 @@ class ControllerBase
     @already_built_response = true
 
     session.store_session(@res)
+    flash.store_flash(@res)
     nil
   end
 
@@ -52,7 +55,7 @@ class ControllerBase
   def render(template_name)
     dir_path = File.dirname(__FILE__)
     #build up the path name
-    template_fname = File.join(
+    view_file_name = File.join(
       dir_path,
       "..",
       "views",
@@ -60,7 +63,7 @@ class ControllerBase
       "#{template_name}.html.erb"
     )
 
-    template_code = File.read(template_fname)
+    template_code = File.read(view_file_name)
 
     render_content(ERB.new(template_code).result(binding), "text/html")
   end
@@ -68,6 +71,10 @@ class ControllerBase
   # method exposing a `Session` object
   def session
     @session ||= Session.new(@req)
+  end
+
+  def flash
+    @flash ||= Flash.new(@req)
   end
 
   # use this with the router to call action_name (:index, :show, :create...)
