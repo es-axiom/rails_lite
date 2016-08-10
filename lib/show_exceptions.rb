@@ -3,7 +3,7 @@ require 'byebug'
 
 class ShowExceptions
   attr_reader :app
-  
+
   def initialize(app)
     @app = app
   end
@@ -17,7 +17,6 @@ class ShowExceptions
   private
 
   def render_exception(e)
-    @e = e
     [
       "500",
       { "Content-type" => "text/html" },
