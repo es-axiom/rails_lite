@@ -20,7 +20,8 @@ class Route
   def run(req, res)
     data = @pattern.match(req.path)
 
-    c = @controller_class.new(req, res, params)
+    route_params = Hash[data.names.zip(data.captures)]
+    c = @controller_class.new(req, res, route_params)
     c.invoke_action(@action_name)
   end
 end
