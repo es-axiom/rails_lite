@@ -79,7 +79,27 @@ class ControllerBase
 
   # use this with the router to call action_name (:index, :show, :create...)
   def invoke_action(name)
+
     self.send(name)
     render(name) unless @already_built_response
+  end
+
+  def form_authencitity_token
+    @auth_token = generate_authenticity_token
+    @res.set_cookie(
+      "authenticity_token",
+      value: @auth_token,
+      path: '/'
+      )
+    @auth_token
+  end
+
+  private
+  def generate_authenticity_token
+    SecureRandom::urlsafe_base64(16)
+  end
+
+  def check_authenticity_token
+
   end
 end
